@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Lịch Hẹn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-group">
+                    <div class="logo-icon"></div>
+                    <h1>Quản Lý Lịch Hẹn</h1>
+                </div>
+                <p class="greeting" id="userGreeting">Xin chào, ...</p>
+            </div>
+            <div class="header-right">
+                <button class="btn-outline" id="logoutBtn">Đăng xuất</button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="btn-primary" id="toggleAddBtn">Thêm Lịch Hẹn</button>
+            <button class="btn-success" id="toggleGroupBtn">👥 Tạo Cuộc Họp Nhóm</button>
+            <button class="btn-outline-icon" id="refreshBtn">🔄 Làm mới</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-layout">
+            
+            <!-- Left Column (Forms & List) -->
+            <div class="left-column">
+                
+                <!-- Inline Form Container -->
+                <div class="inline-form-container" id="formContainer" style="display: none;">
+                    <h2 class="form-title" id="formTitle">📄 Thêm Lịch Hẹn</h2>
+                    
+                    <form id="apptForm">
+                        <input type="hidden" id="formType" value="normal">
+                        
+                        <div class="form-group">
+                            <label>Tên cuộc hẹn *</label>
+                            <input type="text" id="apptName" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Địa điểm</label>
+                            <input type="text" id="apptLocation" placeholder="VD: Phòng họp A">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Bắt đầu *</label>
+                                <input type="datetime-local" id="apptStart" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Kết thúc *</label>
+                                <input type="datetime-local" id="apptEnd" required>
+                            </div>
+                        </div>
+
+                        <div class="reminder-section">
+                            <div class="reminder-header">
+                                <span id="reminderCountDisplay">🔔 Nhắc nhở (0)</span>
+                                <button type="button" class="btn-small-primary" id="addReminderBtn">+ Thêm</button>
+                            </div>
+                            
+                            <!-- Inline Reminder Form -->
+                            <div class="inline-reminder-form" id="inlineReminderForm" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Thời gian nhắc</label>
+                                        <input type="datetime-local" id="reminderTimeInput">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Loại</label>
+                                        <select id="reminderTypeInput" class="form-select">
+                                            <option value="Email">📧 Email</option>
+                                            <option value="SMS">📱 SMS</option>
+                                            <option value="Notification">🔔 Notification</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-primary" style="width: 100%; margin-top: 12px; background: #e0e7ff; color: var(--primary);" id="confirmReminderBtn">✔ Xác nhận nhắc nhở</button>
+                            </div>
+
+                            <div class="reminder-list" id="formReminderList">
+                                <!-- Reminders added here before save -->
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary-large" id="submitFormBtn">✔ Tạo cuộc hẹn</button>
+                            <button type="button" class="btn-secondary-large" id="cancelFormBtn">X Hủy bỏ</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Appointment List -->
+                <div class="appointment-section">
+                    <h2 class="section-title" id="listTitle">Lịch hẹn của bạn (0)</h2>
+                    <div class="appointment-list" id="calendarGrid">
+                        <!-- Cards here -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column (Sidebar) -->
+            <div class="right-column">
+                <div class="sidebar-panel">
+                    <h2 class="sidebar-title">🔔 Thông báo & Nhắc nhở</h2>
+                    <div class="sidebar-list" id="sidebarReminders">
+                        <!-- Sidebar reminders here -->
+                        <div class="empty-state">Không có thông báo</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modals for Conflicts and Group Join -->
+    <div class="modal-overlay" id="conflictModal">
+        <div class="modal-content" style="border-left: 6px solid #ef4444;">
+            <h2 style="color: #ef4444;">Trùng lịch!</h2>
+            <p>Bạn đã có lịch hẹn trong khoảng thời gian này.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-outline" id="changeTimeBtn">Chọn giờ khác</button>
+                <button type="button" id="replaceApptBtn" style="background: #ef4444; color: white;">Thay thế lịch cũ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="groupMeetingModal">
+        <div class="modal-content" style="border-left: 6px solid #10b981; padding: 24px; text-align: center;">
+            <h2 style="color: #10b981; font-size: 1.25rem; margin-top: 0;">👥 Phát hiện cuộc họp nhóm!</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin: 16px 0;">Có cuộc họp nhóm đang diễn ra vào thời gian này.<br>Bạn muốn gia nhập không?</p>
+            <div class="modal-actions" style="justify-content: center; gap: 16px;">
+                <button type="button" id="joinGroupBtn" style="background: #10b981; color: white; padding: 10px 20px; border-radius: 8px;">✔ Gia nhập nhóm</button>
+                <button type="button" class="btn-outline" id="cancelGroupBtn" style="color: var(--text-muted); border-color: #d1d5db;">Tạo cuộc hẹn riêng</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
